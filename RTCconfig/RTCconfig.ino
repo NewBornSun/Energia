@@ -23,6 +23,8 @@ byte bcdToDec(byte val)
 // 3) Sets hour mode to 24 hour clock
 // Assumes you're passing in valid numbers, 
 // Probably need to put in checks for valid numbers.
+
+// To set date to 25-Jan-2012 @ 19:57:11 for the 4 day of the week, use this command - T1157194250112
 void setDateDs1307()                
 {
   // Use of (byte) type casting and ascii math to achieve result.  

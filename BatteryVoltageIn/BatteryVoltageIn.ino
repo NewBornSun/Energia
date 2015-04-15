@@ -7,6 +7,11 @@ int sensorPin = A2; //the analog pin the TMP36's Vout (sense) pin is connected t
  * setup() - this function runs once when you turn your Arduino on
  * We initialize the serial connection with the computer
  */
+ //New LINE
+ //another
+ //and another
+ 
+ //but one more
 void setup()
 {
   Serial.begin(115200);  //Start the serial connection with the computer
