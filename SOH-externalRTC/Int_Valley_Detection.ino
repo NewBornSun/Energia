@@ -189,7 +189,7 @@ unsigned char Valley_Processor(char VD_Flag)
         Serial.println(ValleyDiff);
         
         digitalWrite(LED3, 1);              // LED on
-        if(CheckSOH(Valley1,Valley2,OCV_recent,Temp_recent) == 1)
+        if(CheckSOH(Valley1,Valley2,OCV_recent,Temp_recent, SoC_recent) == 1)
         {
           Serial.println("passed");
           status = SoHpassed;

@@ -15,12 +15,16 @@ int dV1mod_dVData[9] = {1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000};
 //This data is also now in millivolts
 int dV1mod_Vth2[9] = {-160, -125, -90, -55, -20, 15, 50, 85, 120};
 
+int SOH_Index = 0;
+int SOH_Metric[10];
+int warning = 0;
+
 
 /******************************************************************/
 // Check SOH using Valleys, OCV, and Temperature
 /******************************************************************/
 
-int CheckSOH(const int Valley1, const int Valley2, const unsigned int OCV, const double Temperature)
+int CheckSOH(const int Valley1, const int Valley2, const unsigned int OCV, const double Temperature, const int SoC_recent)
 {
   
   int OCV_mv = millivoltspercount*OCV;
@@ -41,9 +45,13 @@ int CheckSOH(const int Valley1, const int Valley2, const unsigned int OCV, const
   Serial.println(tempstring);
     
   int Pass = 0;
-  int SOH_Metric;
   
-  SOH_Metric = (V2_mv - V1_mv) - dvthresh_complete;
+  SOH_Metric[SOH_Index] = (V2_mv - V1_mv) - dvthresh_complete;
+  if(SOH_Index)
+  {
+    int previous = SOH_Metric[SOH_Index]*SOH_Metric[SOH_Index-1];
+    if(previous > 0) warning = 1;
+  }
   
   if( (V2_mv - V1_mv) > dvthresh_complete )
   {
@@ -54,7 +62,9 @@ int CheckSOH(const int Valley1, const int Valley2, const unsigned int OCV, const
   double V2 = voltspercount*Valley2;
   double OCV_V = voltspercount*OCV;
   
-  SaveSOHtoSD(Pass, V1, V2, OCV_V, Temperature, SOH_Metric);
+  SaveSOHtoSD(Pass, V1, V2, OCV_V, Temperature, SOH_Metric[SOH_Index], SoC_recent, warning);
+  
+   SOH_Index++;
   return Pass;
   
 }

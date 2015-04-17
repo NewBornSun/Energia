@@ -42,23 +42,30 @@ int SG_appx[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 // Estimate_SoC is called if OCV was good in OCV Checker
 /***********************************************************/  
 
-char Estimate_SoC(int OCV, int temperature)
+char Estimate_SoC(int OCV, double temperature)
 {
-  float OCV_millivolts = OCV*millivoltspercount;
-  /*
-  Serial.print("OCV = ");
+  float OCV_milli = OCV*12000;
+  float OCV_millivolts = OCV_milli/3045;
+  /*Serial.print("\nOCV_millivolts = ");
   Serial.println(OCV_millivolts);
+  /*Serial.print("\nOCVmillivolts = ");
+  Serial.println(OCV_millivolts);
+  Serial.print("\nOCVmilli = ");
+  Serial.println(OCV_milli);
   Serial.print("temperature = ");
-  Serial.println(temperature);
-  */
-  char SoC = 0;
+  Serial.println(temperature);*/
+  
+  int SoC;
   //Serial.println("Estimate_SoC");
   int SpecificGravity = Estimate_SG(OCV_millivolts, temperature);
   
-  //    Serial.print("SpecificGravity = ");
- //     Serial.println(SpecificGravity);
+     // Serial.print("SpecificGravity = ");
+     // Serial.println(SpecificGravity);
       
   SoC = multiMap(SpecificGravity,SoC_SGdata,SoC_SoCdata,5);
+  //Serial.print("SOC = ");
+  //Serial.print(SoC);
+  //Serial.println("\n");
   
   return SoC;
 }
@@ -67,7 +74,7 @@ char Estimate_SoC(int OCV, int temperature)
 // Estimate Specific Gravity based on OCV and Temp
 /***********************************************************/  
 
-int Estimate_SG(int OCV, int temperature)
+int Estimate_SG(int OCV, double temperature)
 {
   int SpecificGravityInternal = 0;
   
@@ -76,7 +83,7 @@ int Estimate_SG(int OCV, int temperature)
   //then it uses that temp co to estimate what the OCV would be at 25C
   //The new OCV estimate is used on the next iteration to find a more accurate SG and temp co.
   //After 10 iterations, the values are very stagnant
-  for(int m = 1; m < 10; m++)
+  for(int m = 0; m < 10; m++)
   {
     //Look up SG using OCV
     SG_appx[m] = multiMap(OCV_25C[m-1],OCV_OCVdata,OCV_SGdata,20);
@@ -89,7 +96,6 @@ int Estimate_SG(int OCV, int temperature)
   }
   
   SpecificGravityInternal = multiMap(OCV_25C[9],OCV_OCVdata,OCV_SGdata,20);
-
   
   return SpecificGravityInternal;
 }
@@ -105,7 +111,7 @@ int multiMap(int val, int* _in, int* _out, uint8_t size)
   // take care the value is within range
   // val = constrain(val, _in[0], _in[size-1]);
   if (val <= _in[0]) return _out[0];
-  if (val >= _in[size-1]) return _out[size-1];
+  if (val >= _in[size-1]) return _out[size-1]; 
 
   // search right interval
   uint8_t pos = 1;  // _in[0] allready tested

@@ -2,6 +2,10 @@ byte bcdToDec(byte val)  {// Convert binary coded decimal to normal decimal numb
   return ( ((val/16)*10) + (val%16) );
 }
 
+/*********************************************/
+// Get current time and date from RTC
+/*********************************************/
+
 void GetTimeDate()  
 {  //Fill the time and date variables
     Wire.beginTransmission(0x68);
@@ -28,6 +32,10 @@ void GetTimeDate()
       years = years_temp;
     }   
 }
+
+/*********************************************/
+// Check for new file name
+/*********************************************/
 
 void CheckFileName()  //Check if we need a new filename... New file for each day
 {
@@ -73,10 +81,10 @@ void SaveBurstToSD()
 // Save SOH Data to SD
 /*********************************************/
 
-void SaveSOHtoSD(const int pass, const double Valley1, const double Valley2, const double OCV, const double Temperature, const int SOH_Metric)
+void SaveSOHtoSD(const int pass, const double Valley1, const double Valley2, const double OCV, const double Temperature, const int SOH_Metric, int SoC, int warning)
 { 
   GetTimeDate();
-  
+ 
   SOH_File = SD.open("SOH.csv", FILE_WRITE);
   Serial.println("SaveSOHtoSD");
   
@@ -84,17 +92,14 @@ void SaveSOHtoSD(const int pass, const double Valley1, const double Valley2, con
   {
     if(SOHfirst)
     {
-      //SOH_File.println("Pass/Fail,Month,Day,Year,Hour,Min,Valley1,Valley2,OCV,Temperature,SOH Metric");
-      //sprintf(SOHstring, "%1i,%02i,%02i,%02i,%02i,%02i,%i,%i,%i,%i,%i", pass, temp->tm_mon, temp->tm_mday, year, temp->tm_hour, temp->tm_min, Valley1, Valley2, OCV, Temperature, SOH_Metric);
-      SOH_File.println("Pass/Fail,mm/dd/yy,Hour:Min,Valley1,Valley2,OCV,Temperature,SOH Metric");
-      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i", pass, months, dayofmonth, years, hours, minutes, Valley1, Valley2, OCV, Temperature, SOH_Metric);
+      SOH_File.println("Pass/Fail,mm/dd/yy,Hour:Min,Valley1,Valley2,OCV,Temperature,SoC, SOH Metric, Warning");
+      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i,%i,%i", pass, months, dayofmonth, years, hours, minutes, Valley1, Valley2, OCV, Temperature, SoC, SOH_Metric, warning);
       SOH_File.println(SOHstring);
       SOHfirst = 0;
     }
     else
     {
-      //sprintf(SOHstring, "%1i,%02i,%02i,%02i,%02i,%02i,%i,%i,%i,%i,%i", pass, temp->tm_mon, temp->tm_mday, year, temp->tm_hour, temp->tm_min, Valley1, Valley2, OCV, Temperature, SOH_Metric);
-      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i", pass, months, dayofmonth, years, hours, minutes, Valley1, Valley2, OCV, Temperature, SOH_Metric);
+      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i,%i,%i", pass, months, dayofmonth, years, hours, minutes, Valley1, Valley2, OCV, Temperature, SoC, SOH_Metric, warning);
       SOH_File.println(SOHstring);
     }
     SOH_File.close();
@@ -115,6 +120,7 @@ void SaveDataString(char *dataString)
     if(!flag)
     {
       OCV_File.println("OCV_samples, measvolts, OCV_SoC_Estimates, temperature_samples, OCV_valid, year, month, dayOfMonth, hour, minute, second, OCV_meas_index");
+      OCV_File.println(dataString);
       flag=1;
       OCV_File.close();
     }

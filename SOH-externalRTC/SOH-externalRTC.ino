@@ -40,6 +40,7 @@ int SOHfirst = 1;
 int flag = 0;
 int saveValleyDet = 0;
 int valleyFlag = 0;
+int SoCflag = 0;
 
 int file_dayofmonth = 99;
 int file_month = 99;
@@ -197,7 +198,7 @@ void loop()
   
   if(OCV_Measure_Flag) OCV_Checker();
   
-  if(ValleyDetect_Flag >= 1 && valleyFlag == 1)
+  if(ValleyDetect_Flag >= 1 && valleyFlag == 1 && SoCflag)
   {
     Serial.println("Valley Interrupt");
     ValleyStatus = Valley_Processor(ValleyDetect_Flag);
