@@ -68,9 +68,15 @@ void CheckMinMaxOCV()
       OCV_valid[OCV_meas_index] = 1;
       OCV_SoC_Estimates[OCV_meas_index] = Estimate_SoC( OCV_samples[OCV_meas_index] , temperature_samples[OCV_meas_index]);
       valleyFlag = 1;
+      if(OCV_SoC_Estimates[OCV_meas_index] > 30)
+      { 
+        digitalWrite(LED2, 1);
+        SoCflag = 1;
+      }
+      else SoCflag = 0;
  
-      Serial.print("OCV_SoC_Estimates = ");
-      Serial.println(OCV_SoC_Estimates[OCV_meas_index]);
+      //Serial.print("OCV_SoC_Estimates = ");
+      //Serial.println(OCV_SoC_Estimates[OCV_meas_index]);
       digitalWrite(LED2, 1);              // LED on
       
     }
@@ -92,7 +98,7 @@ void MakeDataString()
   OCV_SoC_Estimates[OCV_meas_index], temperature_samples[OCV_meas_index], OCV_valid[OCV_meas_index], 
   year, temp->tm_mon, temp->tm_mday, temp->tm_hour, temp->tm_min, temp->tm_sec, OCV_meas_index);
   
-  sprintf(serialData, "Baterry Voltage: %.4f   Temperature: %.2f    OCV Valid: %i   OCV SoC Estimate: %i",
+  sprintf(serialData, "Baterry Voltage: %.4f   Temperature: %.2f    OCV Valid: %i   SoC Estimate: %i",
   measvolts, temperature_samples[OCV_meas_index], OCV_valid[OCV_meas_index], OCV_SoC_Estimates[OCV_meas_index]);
 }
 

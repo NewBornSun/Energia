@@ -39,7 +39,7 @@ void SaveBurstToSD()
 // Save SOH Data to SD
 /*********************************************/
 
-void SaveSOHtoSD(const int pass, const double Valley1, const double Valley2, const double OCV, const double Temperature, const int SOH_Metric)
+void SaveSOHtoSD(const int pass, const double Valley1, const double Valley2, const double OCV, const double Temperature, const int SOH_Metric, int SoC, int warning)
 {
   HibernateCalendarGet(temp);
     
@@ -52,15 +52,15 @@ void SaveSOHtoSD(const int pass, const double Valley1, const double Valley2, con
     {
       //SOH_File.println("Pass/Fail,Month,Day,Year,Hour,Min,Valley1,Valley2,OCV,Temperature,SOH Metric");
       //sprintf(SOHstring, "%1i,%02i,%02i,%02i,%02i,%02i,%i,%i,%i,%i,%i", pass, temp->tm_mon, temp->tm_mday, year, temp->tm_hour, temp->tm_min, Valley1, Valley2, OCV, Temperature, SOH_Metric);
-      SOH_File.println("Pass/Fail,mm/dd/yy,Hour:Min,Valley1,Valley2,OCV,Temperature,SOH Metric");
-      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i", pass, temp->tm_mon, temp->tm_mday, year, temp->tm_hour, temp->tm_min, Valley1, Valley2, OCV, Temperature, SOH_Metric);
+      SOH_File.println("Pass/Fail,mm/dd/yy,Hour:Min,Valley1,Valley2,OCV,Temperature,SoC,SOH Metric,Warning");
+      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i,%i,%i", pass, temp->tm_mon, temp->tm_mday, year, temp->tm_hour, temp->tm_min, Valley1, Valley2, OCV, Temperature, SoC, SOH_Metric, warning);
       SOH_File.println(SOHstring);
       SOHfirst = 0;
     }
     else
     {
       //sprintf(SOHstring, "%1i,%02i,%02i,%02i,%02i,%02i,%i,%i,%i,%i,%i", pass, temp->tm_mon, temp->tm_mday, year, temp->tm_hour, temp->tm_min, Valley1, Valley2, OCV, Temperature, SOH_Metric);
-      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i", pass, temp->tm_mon, temp->tm_mday, year, temp->tm_hour, temp->tm_min, Valley1, Valley2, OCV, Temperature, SOH_Metric);
+       sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i,%i,%i", pass, temp->tm_mon, temp->tm_mday, year, temp->tm_hour, temp->tm_min, Valley1, Valley2, OCV, Temperature, SoC, SOH_Metric, warning);
       SOH_File.println(SOHstring);
     }
     SOH_File.close();

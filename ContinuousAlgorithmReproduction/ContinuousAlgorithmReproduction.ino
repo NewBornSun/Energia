@@ -40,6 +40,7 @@ int SOHfirst = 1;
 int flag = 0;
 int saveValleyDet = 0;
 int valleyFlag = 0;
+int SoCflag = 0;
 
 /**************************************************************/
 // Includes and defines for RTC
@@ -159,11 +160,11 @@ void setup() //Run once
   HibernateCalendarSet(temp); //<-- the struct declared
   
   // We change the hour, minutes and seconds
-  temp->tm_hour= 14;
-  temp->tm_min= 36;
+  temp->tm_hour= 15;
+  temp->tm_min= 12;
   temp->tm_sec = 30;
   temp->tm_mon = 04;
-  temp->tm_mday = 04;
+  temp->tm_mday = 18;
   temp->tm_year = 15;
   // This fuction below is what actualy updates the values inside the peripheral. 
   // if you don't use it, the value changes above won't do anyting

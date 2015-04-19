@@ -42,16 +42,17 @@ int SG_appx[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 // Estimate_SoC is called if OCV was good in OCV Checker
 /***********************************************************/  
 
-char Estimate_SoC(int OCV, int temperature)
+char Estimate_SoC(int OCV, double temperature)
 {
-  float OCV_millivolts = OCV*millivoltspercount;
+  float OCV_milli = OCV*12000;
+  float OCV_millivolts = OCV_milli/3045;
   /*
   Serial.print("OCV = ");
   Serial.println(OCV_millivolts);
   Serial.print("temperature = ");
   Serial.println(temperature);
   */
-  char SoC = 0;
+  int SoC = 0;
   //Serial.println("Estimate_SoC");
   int SpecificGravity = Estimate_SG(OCV_millivolts, temperature);
   

@@ -68,7 +68,11 @@ void CheckMinMaxOCV()
       OCV_valid[OCV_meas_index] = 1;
       OCV_SoC_Estimates[OCV_meas_index] = Estimate_SoC( OCV_samples[OCV_meas_index] , temperature_samples[OCV_meas_index]);
       valleyFlag = 1;
-      if(OCV_SoC_Estimates[OCV_meas_index] > 30) SoCflag = 1;
+      if(OCV_SoC_Estimates[OCV_meas_index] > 30)
+      { 
+        digitalWrite(LED2, 1);
+        SoCflag = 1;
+      }
       else SoCflag = 0;
  
       //Serial.print("OCV_SoC_Estimates = ");

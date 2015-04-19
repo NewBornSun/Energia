@@ -198,7 +198,7 @@ void loop()
   
   if(OCV_Measure_Flag) OCV_Checker();
   
-  if(ValleyDetect_Flag >= 1 && valleyFlag == 1 && SoCflag)
+  if(ValleyDetect_Flag >= 1 && valleyFlag == 1)// && SoCflag)
   {
     Serial.println("Valley Interrupt");
     ValleyStatus = Valley_Processor(ValleyDetect_Flag);

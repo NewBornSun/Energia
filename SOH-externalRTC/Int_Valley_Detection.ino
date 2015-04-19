@@ -36,7 +36,7 @@ int Valley1 = 0;
 void Timer1Isr(void)
 {
   ROM_TimerIntClear(TIMER1_BASE, TIMER_TIMA_TIMEOUT);     // Clear the timer interrupt
-  digitalWrite(LED2, digitalRead(LED1) ^ 1);              // toggle LED pin 
+  //digitalWrite(LED2, digitalRead(LED1) ^ 1);              // toggle LED pin 
     
   VD_sampletime[fastindex] = micros();
   VD_samples[fastindex] = analogRead(BatteryVoltagePin);
