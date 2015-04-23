@@ -124,7 +124,18 @@ const int countspervolt = 3045/12.00;
 
 const int TemperatureVoltagePin = A3;
 
+/**************************************************************/
+// EEPROM and GPIO defines and variables
+/**************************************************************/
 
+#include "driverlib/eeprom.h"
+#include "driverlib/gpio.h"
+
+uint32_t eepromReadData;
+uint32_t eepromWriteData = 150;
+uint32_t restoreEEPROM = 0;
+uint32_t EEPROM_TEST_ADDRESS = 0x0000;
+int gpioInt = 1;
 
 /**************************************************************/
 // END DEFINITIONS AND HEADERS
@@ -177,6 +188,27 @@ void setup() //Run once
   pinMode(LED4,OUTPUT);
   
   /************************************************/
+  // EEPROM Init
+  
+  SysCtlPeripheralEnable(SYSCTL_PERIPH_EEPROM0);
+  
+  if(EEPROMInit() == EEPROM_INIT_OK) Serial.println("EEPROM_INIT_OK");
+  else if(EEPROMInit() == EEPROM_INIT_RETRY) Serial.println("EEPROM_INIT_RETRY");
+  else if(EEPROMInit() == EEPROM_INIT_ERROR) Serial.println("EEPROM_INIT_ERROR");
+  else Serial.println("None of the above");
+   
+  /************************************************/
+  // GPIO interrupt init
+  
+  GPIODirModeSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_DIR_MODE_IN);
+  GPIOPadConfigSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+  
+  SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOM);
+  GPIOIntRegister(GPIO_PORTM_BASE, GPIOIsr);
+  GPIOIntTypeSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_BOTH_EDGES);
+  GPIOIntEnable(GPIO_PORTM_BASE, GPIO_INT_PIN_5);
+  
+  /************************************************/
   // Initialize Timer Interrupts
   initTimer0_OCV();
   initTimer1_Valley();
@@ -196,9 +228,11 @@ void loop()
 {
   CheckFileName();
   
+  
+  
   if(OCV_Measure_Flag) OCV_Checker();
   
-  if(ValleyDetect_Flag >= 1 && valleyFlag == 1)// && SoCflag)
+  if(ValleyDetect_Flag >= 1 && valleyFlag == 1 && SoCflag)
   {
     Serial.println("Valley Interrupt");
     ValleyStatus = Valley_Processor(ValleyDetect_Flag);

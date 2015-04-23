@@ -16,6 +16,10 @@ int OCV_lower_limit = 11*countspervolt;
 
 int OCV_settle_threshold = 0.1*countspervolt;
 
+/*******************************************************/
+// Timer0 interrupt service routine
+/*******************************************************/
+
 void Timer0Isr(void) //Timer0 Interrupt Service Routine
 {
   ROM_TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);  // Clear the timer interrupt
@@ -31,6 +35,14 @@ void Timer0Isr(void) //Timer0 Interrupt Service Routine
 
 void OCV_Checker()
 {
+  EEPROMRead((uint32_t *)&eepromReadData, EEPROM_TEST_ADDRESS, 4); // Read Contents
+  
+  if(eepromReadData == 150) 
+  { 
+     digitalWrite(LED4, HIGH);
+     EEPROMProgram((uint32_t *)&restoreEEPROM, EEPROM_TEST_ADDRESS, 4); // Restore Contents
+     //SaveSOHtoSD(0, 0, 0, 0, 0, -10, 0, 0);
+  }
   GetTimeDate();
   
   OCV_samples[OCV_meas_index] = analogRead(BatteryVoltagePin);
