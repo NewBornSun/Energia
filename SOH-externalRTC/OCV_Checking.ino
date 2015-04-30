@@ -10,6 +10,7 @@ double temperature_samples[OCV_Samples];
 unsigned int OCV_SoC_Estimates[OCV_Samples];
 unsigned char OCV_valid[OCV_Samples];
 unsigned long OCV_sampletime[OCV_Samples];
+unsigned int SoC_Max = 0;
 
 int OCV_upper_limit = 13*countspervolt;
 int OCV_lower_limit = 11*countspervolt;
@@ -35,14 +36,14 @@ void Timer0Isr(void) //Timer0 Interrupt Service Routine
 
 void OCV_Checker()
 {
-  EEPROMRead((uint32_t *)&eepromReadData, EEPROM_TEST_ADDRESS, 4); // Read Contents
+  //EEPROMRead((uint32_t *)&eepromReadData, EEPROM_TEST_ADDRESS, 4); // Read Contents
   
-  if(eepromReadData == 150) 
-  { 
-     digitalWrite(LED4, HIGH);
-     EEPROMProgram((uint32_t *)&restoreEEPROM, EEPROM_TEST_ADDRESS, 4); // Restore Contents
+  //if(eepromReadData == 150) 
+  //{ 
+     //digitalWrite(LED4, HIGH);
+     //EEPROMProgram((uint32_t *)&restoreEEPROM, EEPROM_TEST_ADDRESS, 4); // Restore Contents
      //SaveSOHtoSD(0, 0, 0, 0, 0, -10, 0, 0);
-  }
+  //}
   GetTimeDate();
   
   OCV_samples[OCV_meas_index] = analogRead(BatteryVoltagePin);
@@ -79,8 +80,11 @@ void CheckMinMaxOCV()
       //if the difference between min and max is okay, say it's valid
       OCV_valid[OCV_meas_index] = 1;
       OCV_SoC_Estimates[OCV_meas_index] = Estimate_SoC( OCV_samples[OCV_meas_index] , temperature_samples[OCV_meas_index]);
+      
+      if(OCV_SoC_Estimates[OCV_meas_index] > SoC_Max) SoC_Max = OCV_SoC_Estimates[OCV_meas_index];
+      
       valleyFlag = 1;
-      if(OCV_SoC_Estimates[OCV_meas_index] > 30)
+      if(SoC_Max > 50)
       { 
         digitalWrite(LED2, 1);
         SoCflag = 1;
@@ -110,8 +114,8 @@ void MakeDataString()
   OCV_SoC_Estimates[OCV_meas_index], temperature_samples[OCV_meas_index], OCV_valid[OCV_meas_index], 
   years, months, dayofmonth, hours, minutes, seconds, OCV_meas_index);
   
-  sprintf(serialData, "Baterry Voltage: %.4f   Temperature: %.2f    OCV Valid: %i   SoC Estimate: %i",
-  measvolts, temperature_samples[OCV_meas_index], OCV_valid[OCV_meas_index], OCV_SoC_Estimates[OCV_meas_index]);
+  sprintf(serialData, "Bat Voltage: %i Baterry Voltage: %.4f Temperature: %.2f  OCV Valid: %i SoC Estimate: %i  SoC Max: %i",OCV_samples[OCV_meas_index],
+  measvolts, temperature_samples[OCV_meas_index], OCV_valid[OCV_meas_index], OCV_SoC_Estimates[OCV_meas_index], SoC_Max);
 }
 
 /*******************************************************/
@@ -185,7 +189,7 @@ unsigned int lookupOCV(unsigned int ref)
 
 unsigned int lookupSoC(unsigned int ref)
 {
-  if(ref < OCV_Samples)  return OCV_SoC_Estimates[ref];
+  if(ref < OCV_Samples)  return SoC_Max; //OCV_SoC_Estimates[ref];
   else return 0xffff;
 }
 

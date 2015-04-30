@@ -31,7 +31,7 @@ File Valley_File;
 File SOH_File;
 
 const int chipselect = 39;
-const char* SOH_Filename = "SOH.txt";
+const char* SOH_Filename = "SOH.csv";
 char Valley_Filename[13], OCV_Filename[13];
 char linestringtemp[50], linestringtemp1[13], dataString[55], SOHstring[55], serialData[105];
 
@@ -102,6 +102,7 @@ unsigned long endtime = 0;    // = micros();
 #define SoHfailed 6
 #define SoHpassed 7
 
+unsigned char status = initialized;
 unsigned char ValleyStatus = initialized;
 
 /**************************************************************/
@@ -114,9 +115,9 @@ const int BatteryVoltagePin = A1;
 float measvolts = 0;
 
 char voltstring[8];
-const float voltspercount = 12.00/3045;//12.01/2957;
-const float millivoltspercount = 12000/3045;
-const int countspervolt = 3045/12.00;
+const float voltspercount = 12.00/3023;//12.01/2957;
+const float millivoltspercount = 12000/3023;
+const int countspervolt = 3023/12.00;
 
 /**************************************************************/
 // Temperature Sensor (1uF between Vout and Ground)
@@ -128,7 +129,7 @@ const int TemperatureVoltagePin = A3;
 // EEPROM and GPIO defines and variables
 /**************************************************************/
 
-#include "driverlib/eeprom.h"
+/*#include "driverlib/eeprom.h"
 #include "driverlib/gpio.h"
 
 uint32_t eepromReadData;
@@ -157,7 +158,7 @@ void setup() //Run once
   Wire.begin();
   Wire.setModule(0); //I2C bus 0
   
-  GetTimeDate();
+  //GetTimeDate();
   CheckFileName(); //New file for each day
   Serial.print("\nOCV_Filename: ");
   Serial.print(OCV_Filename);
@@ -165,8 +166,8 @@ void setup() //Run once
   
   /************************************************/
   // SD card init
-  delay(1000);
   SPI.setModule(2); // SPI Bus 2
+  
   Serial.print("Initializing SD card...");
   
   if (!SD.begin(chipselect)) {
@@ -174,7 +175,6 @@ void setup() //Run once
     return;}
   
   Serial.print("Initialization done.\n");
-  delay(1000);
  
   /************************************************/
   // Temperature Sesnor Init
@@ -189,8 +189,7 @@ void setup() //Run once
   
   /************************************************/
   // EEPROM Init
-  
-  SysCtlPeripheralEnable(SYSCTL_PERIPH_EEPROM0);
+  /*SysCtlPeripheralEnable(SYSCTL_PERIPH_EEPROM0);
   
   if(EEPROMInit() == EEPROM_INIT_OK) Serial.println("EEPROM_INIT_OK");
   else if(EEPROMInit() == EEPROM_INIT_RETRY) Serial.println("EEPROM_INIT_RETRY");
@@ -199,14 +198,13 @@ void setup() //Run once
    
   /************************************************/
   // GPIO interrupt init
-  
-  GPIODirModeSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_DIR_MODE_IN);
+  /*GPIODirModeSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_DIR_MODE_IN);
   GPIOPadConfigSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
   
   SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOM);
   GPIOIntRegister(GPIO_PORTM_BASE, GPIOIsr);
-  GPIOIntTypeSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_BOTH_EDGES);
-  GPIOIntEnable(GPIO_PORTM_BASE, GPIO_INT_PIN_5);
+  GPIOIntTypeSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_FALLING_EDGE);
+  GPIOIntEnable(GPIO_PORTM_BASE, GPIO_INT_PIN_5);*/
   
   /************************************************/
   // Initialize Timer Interrupts
@@ -228,15 +226,13 @@ void loop()
 {
   CheckFileName();
   
-  
-  
   if(OCV_Measure_Flag) OCV_Checker();
   
   if(ValleyDetect_Flag >= 1 && valleyFlag == 1 && SoCflag)
   {
     Serial.println("Valley Interrupt");
     ValleyStatus = Valley_Processor(ValleyDetect_Flag);
-    SaveBurstToSD();
+    if(status >= dvdtdetected) SaveBurstToSD();
     ValleyDetect_Flag = 0;
   }
 }

@@ -70,7 +70,7 @@ unsigned char Valley_Processor(char VD_Flag)
 {
   int startpoint = 0;
   int endpoint = 0;
-  unsigned char status = initialized;
+  //unsigned char status = initialized;
   /*Status definitions
   #define initialized 0
   #define VoltSettled 1
@@ -117,8 +117,8 @@ unsigned char Valley_Processor(char VD_Flag)
   
   double Temp_recent = lookupTemp(SoC_recent_ref);
   
-  Serial.print("SoC_recent = ");
-  Serial.println(SoC_recent);
+  //Serial.print("SoC_recent = ");
+  //Serial.println(SoC_recent);
   if(SoC_recent < 0xffff)
   {
     status = VoltSettled;
@@ -130,7 +130,7 @@ unsigned char Valley_Processor(char VD_Flag)
  // Serial.println("Voltage Settled");
   
   //UNCOMMENT THIS FOR DEBUGGING, this gets rid of the dv check, so spinning the pot works
-  //status = dvdtdetected;
+  status = dvdtdetected;
   
   digitalWrite(LED3, 0);              // LED off
   digitalWrite(LED4, 0);              // LED off

@@ -12,6 +12,7 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
 #include "driverlib/gpio.h"
+#include "driverlib/eeprom.h"
 
 #define LED1 PN_1
 #define LED2 PN_0
@@ -19,6 +20,11 @@
 #define LED4 PF_0
 
 File Valley_File;
+
+uint32_t eepromReadData;
+uint32_t eepromWriteData = 109;
+uint32_t restoreEEPROM = 0;
+uint32_t EEPROM_TEST_ADDRESS = 0x0000;
 
 int first = 1;
 const int chipselect = 39;
@@ -44,7 +50,7 @@ void setup()
   
   SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOM);
   GPIOIntRegister(GPIO_PORTM_BASE, GPIOIsr);
-  GPIOIntTypeSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_BOTH_EDGES);
+  GPIOIntTypeSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_FALLING_EDGE);
   GPIOIntEnable(GPIO_PORTM_BASE, GPIO_INT_PIN_5);
   //
   
@@ -54,22 +60,25 @@ void setup()
   SysCtlPeripheralClockGating(true);
   SysCtlIntEnable(INT_GPIOM);
   
-  delay(1000);
-  SPI.setModule(2); // SPI Bus 2
-  Serial.print("Initializing SD card...");
+  SysCtlPeripheralEnable(SYSCTL_PERIPH_EEPROM0);
   
-  if (!SD.begin(chipselect)) {
-    Serial.println("initialization failed!");
-    return;}
-  
-  else digitalWrite(LED4,HIGH);//Serial.print("Initialization done.\n");
-  delay(1000);
+  if(EEPROMInit() == EEPROM_INIT_OK) Serial.println("EEPROM_INIT_OK");
+  else if(EEPROMInit() == EEPROM_INIT_RETRY) Serial.println("EEPROM_INIT_RETRY");
+  else if(EEPROMInit() == EEPROM_INIT_ERROR) Serial.println("EEPROM_INIT_ERROR");
+  else Serial.println("None of the above");
 
   Serial.println("Begin loop()");
 }
 
 void loop()
-{
+{ 
+//  EEPROMRead((uint32_t *)&eepromReadData, EEPROM_TEST_ADDRESS, 4); // Read Contents
+//  
+//  if(eepromReadData == 111)
+//  {
+//    digitalWrite(LED1, HIGH);
+//    EEPROMProgram((uint32_t *)&restoreEEPROM, EEPROM_TEST_ADDRESS, 4);
+//  }
   digitalWrite(LED3, HIGH);
   delay(1000);
   digitalWrite(LED3, LOW);
@@ -79,31 +88,8 @@ void loop()
 void GPIOIsr()
 {
   Serial.println("Interrupt Handler");
-  if(first)
-  {
-    Serial.println("Putting MCU to Sleep");
-    digitalWrite(LED1, digitalRead(LED1) ^ 1);
-    first = 0;
-    
-    
-    Valley_File = SD.open("Testing.txt", FILE_WRITE);
-    
-    if(Valley_File)
-    {
-      Valley_File.println("GPIO interrupt");
-      Valley_File.close();
-    }
-    else Serial.println("Valley file error");
-    
-     GPIOIntClear(GPIO_PORTM_BASE, GPIO_INT_PIN_5);
-    //SysCtlSleep(); // Puts the processor into sleep mode
-  }
-  else
-  {
-    Serial.println("Wking MCU From Sleep");
-    digitalWrite(LED2, digitalRead(LED2) ^ 1);
-    first = 1;
-    GPIOIntClear(GPIO_PORTM_BASE, GPIO_INT_PIN_5);
-  }
+  digitalWrite(LED1, HIGH);
+  EEPROMProgram((uint32_t *)&eepromWriteData, EEPROM_TEST_ADDRESS, 4);
+  GPIOIntClear(GPIO_PORTM_BASE, GPIO_INT_PIN_5);
   //SysCtlSleep();
 }

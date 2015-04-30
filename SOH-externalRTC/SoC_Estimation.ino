@@ -46,8 +46,8 @@ char Estimate_SoC(int OCV, double temperature)
 {
   float OCV_milli = OCV*12000;
   float OCV_millivolts = OCV_milli/3045;
-  /*Serial.print("\nOCV_millivolts = ");
-  Serial.println(OCV_millivolts);
+  //Serial.print("\nOCV_millivolts = ");
+  //Serial.println(OCV_millivolts);
   /*Serial.print("\nOCVmillivolts = ");
   Serial.println(OCV_millivolts);
   Serial.print("\nOCVmilli = ");

@@ -26,7 +26,7 @@ void setup()
   else if(EEPROMInit() == EEPROM_INIT_ERROR) Serial.println("EEPROM_INIT_ERROR");
   else Serial.println("None of the above");
   
-  EEPROMProgram((uint32_t *)&eepromWriteData, EEPROM_TEST_ADDRESS, 4);
+  //EEPROMProgram((uint32_t *)&eepromWriteData, EEPROM_TEST_ADDRESS, 4);
   
   EEPROMRead((uint32_t *)&eepromReadData, EEPROM_TEST_ADDRESS, 4);
   

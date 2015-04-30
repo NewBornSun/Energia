@@ -41,10 +41,13 @@ int CheckSOH(const int Valley1, const int Valley2, const unsigned int OCV, const
   
   char tempstring[50] = "";
   //sprintf(tempstring, "OCV %i,dvthr %i", OCV_mv, dvthresh_complete);
-  sprintf(tempstring, "OCV %i,V1 %i,V2 %i, dv2th %i, dv1mod %i,dvthr %i", OCV_mv, V1_mv, V2_mv, dV2thresh, dV1mod, dvthresh_complete);
-  Serial.println(tempstring);
+  //sprintf(tempstring, "OCV %i,V1 %i,V2 %i, dv2th %i, dv1mod %i,dvthr %i", OCV_mv, V1_mv, V2_mv, dV2thresh, dV1mod, dvthresh_complete);
+  //Serial.println(tempstring);
     
   int Pass = 0;
+  double V1 = voltspercount*Valley1;
+  double V2 = voltspercount*Valley2;
+  double OCV_V = voltspercount*OCV;
   
   SOH_Metric[SOH_Index] = (V2_mv - V1_mv) - dvthresh_complete;
   if(SOH_Index)
@@ -58,13 +61,12 @@ int CheckSOH(const int Valley1, const int Valley2, const unsigned int OCV, const
     Pass = 1;
   }
   
-  double V1 = voltspercount*Valley1;
-  double V2 = voltspercount*Valley2;
-  double OCV_V = voltspercount*OCV;
+  // reset parameters
+  SoCflag = 0;
+  ValleyDetect_Flag = 0;
+  SOH_Index++;
   
   SaveSOHtoSD(Pass, V1, V2, OCV_V, Temperature, SOH_Metric[SOH_Index], SoC_recent, warning);
-  
-   SOH_Index++;
   return Pass;
   
 }

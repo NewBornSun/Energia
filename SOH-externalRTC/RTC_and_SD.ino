@@ -39,6 +39,8 @@ void GetTimeDate()
 
 void CheckFileName()  //Check if we need a new filename... New file for each day
 {
+  GetTimeDate();
+  
   if( (file_dayofmonth != dayofmonth)||(file_month != months)||(file_year != years) )
   {
     //   Serial.println(OCV_filename);
@@ -59,7 +61,7 @@ void CheckFileName()  //Check if we need a new filename... New file for each day
 void SaveBurstToSD()
 {
     Valley_File = SD.open(Valley_Filename, FILE_WRITE);
-    Serial.println("SaveBurstToSD");
+    //Serial.println("SaveBurstToSD");
     
     if(Valley_File)
     {
@@ -69,7 +71,9 @@ void SaveBurstToSD()
       {
         //s_VD_s is stored_VD_samples
         float voltage = avg_VD_s[j]*voltspercount;
+        if(j <= 2 && avg_VD_s[j] == 0) voltage = avg_VD_s[j+3]*voltspercount;
         sprintf(linestringtemp, "%i,%i,%i,%i,%.4f", stored_VD_sampletime[j], s_VD_s[j],stored_VD_status[j],avg_VD_s[j],voltage);  
+        
         Valley_File.println(linestringtemp);
       }  
       Valley_File.close();
@@ -83,7 +87,7 @@ void SaveBurstToSD()
 
 void SaveSOHtoSD(const int pass, const double Valley1, const double Valley2, const double OCV, const double Temperature, const int SOH_Metric, int SoC, int warning)
 { 
-  GetTimeDate();
+  //GetTimeDate();
  
   SOH_File = SD.open("SOH.csv", FILE_WRITE);
   Serial.println("SaveSOHtoSD");

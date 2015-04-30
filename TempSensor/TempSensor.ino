@@ -1,4 +1,4 @@
-const int tempSensor = A1; //Temp sensor on analog pin A0;
+const int tempSensor = A3; //Temp sensor on analog pin A0;
 
 void setup()
 {
