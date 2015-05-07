@@ -1,4 +1,10 @@
-byte bcdToDec(byte val)  {// Convert binary coded decimal to normal decimal numbers
+
+/*********************************************/
+// Convert binary coded decimal to normal
+// decimal numbers
+/*********************************************/
+
+byte bcdToDec(byte val)  {
   return ( ((val/16)*10) + (val%16) );
 }
 
@@ -7,7 +13,7 @@ byte bcdToDec(byte val)  {// Convert binary coded decimal to normal decimal numb
 /*********************************************/
 
 void GetTimeDate()  
-{  //Fill the time and date variables
+{   // Fill the time and date variables
     Wire.beginTransmission(0x68);
     Wire.write(byte(0x00));
     Wire.endTransmission();
@@ -61,7 +67,7 @@ void CheckFileName()  //Check if we need a new filename... New file for each day
 void SaveBurstToSD()
 {
     Valley_File = SD.open(Valley_Filename, FILE_WRITE);
-    //Serial.println("SaveBurstToSD");
+    Serial.println("SaveValleyToSD");
     
     if(Valley_File)
     {
@@ -85,30 +91,35 @@ void SaveBurstToSD()
 // Save SOH Data to SD
 /*********************************************/
 
-void SaveSOHtoSD(const int pass, const double Valley1, const double Valley2, const double OCV, const double Temperature, const int SOH_Metric, int SoC, int warning)
+void SaveSOHtoSD(const int pass, const double Valley1, const double Valley2, const double OCV, double Temperature, double SOH_Metric, unsigned int SoC, int warning)
 { 
-  //GetTimeDate();
+  GetTimeDate();
  
-  SOH_File = SD.open("SOH.csv", FILE_WRITE);
+  SOH_File = SD.open("SoH.csv", FILE_WRITE);
   Serial.println("SaveSOHtoSD");
   
   if(SOH_File)
   {
-    if(SOHfirst)
+    if(SOHfirst) //First time opening file? If so print the text at the top of it.
     {
       SOH_File.println("Pass/Fail,mm/dd/yy,Hour:Min,Valley1,Valley2,OCV,Temperature,SoC, SOH Metric, Warning");
-      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i,%i,%i", pass, months, dayofmonth, years, hours, minutes, Valley1, Valley2, OCV, Temperature, SoC, SOH_Metric, warning);
+      
+      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i,%.2f,%i", pass, months, dayofmonth, 
+      years, hours, minutes, Valley1, Valley2, OCV, Temperature, SoC, SOH_Metric, warning);
+      
       SOH_File.println(SOHstring);
       SOHfirst = 0;
     }
     else
     {
-      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i,%i,%i", pass, months, dayofmonth, years, hours, minutes, Valley1, Valley2, OCV, Temperature, SoC, SOH_Metric, warning);
+      sprintf(SOHstring, "%1i,%02i/%02i/%02i,%02i:%02i,%.4f,%.4f,%.4f,%.2f,%i,%.2f,%i", pass, months, dayofmonth,
+      years, hours, minutes, Valley1, Valley2, OCV, Temperature, SoC, SOH_Metric, warning);
+      
       SOH_File.println(SOHstring);
     }
     SOH_File.close();
   }
-  else Serial.println("SOH file error");
+  else Serial.println("SoH file error");
 }
 
 /*********************************************/
@@ -121,7 +132,7 @@ void SaveDataString(char *dataString)
 
   if (OCV_File) 
   {
-    if(!flag)
+    if(!flag) //First time opening file? If so print the text at the top of it.
     {
       OCV_File.println("OCV_samples, measvolts, OCV_SoC_Estimates, temperature_samples, OCV_valid, year, month, dayOfMonth, hour, minute, second, OCV_meas_index");
       OCV_File.println(dataString);

@@ -1,6 +1,6 @@
 /**************************************************************/
 // State of Health Algorithm
-// Edited by Alex LePelch on Feb. 26th 2015
+// Edited by Alex LePelch on May 7th 2015
 /**************************************************************/
 
 
@@ -31,7 +31,6 @@ File Valley_File;
 File SOH_File;
 
 const int chipselect = 39;
-const char* SOH_Filename = "SOH.csv";
 char Valley_Filename[13], OCV_Filename[13];
 char linestringtemp[50], linestringtemp1[13], dataString[55], SOHstring[55], serialData[105];
 
@@ -39,7 +38,7 @@ int first = 0;
 int SOHfirst = 1;
 int flag = 0;
 int saveValleyDet = 0;
-int valleyFlag = 0;
+int OCV_Flag = 0;
 int SoCflag = 0;
 
 int file_dayofmonth = 99;
@@ -109,13 +108,12 @@ unsigned char ValleyStatus = initialized;
 // Defines and Variables for Voltage Measurement
 /**************************************************************/
 
-// A0 is breakout board Vin sensing, A1 is pot, A2 is temperature
 const int BatteryVoltagePin = A1;
 
 float measvolts = 0;
 
 char voltstring[8];
-const float voltspercount = 12.00/3023;//12.01/2957;
+const float voltspercount = 12.00/3023;
 const float millivoltspercount = 12000/3023;
 const int countspervolt = 3023/12.00;
 
@@ -139,6 +137,30 @@ uint32_t EEPROM_TEST_ADDRESS = 0x0000;
 int gpioInt = 1;
 
 /**************************************************************/
+// Defines and variables for SoH determination.
+// Must be global so that SaveSoHtoSD() has access.
+/**************************************************************/
+
+ double OCV_Volts;
+ double V1_Volts;
+ double V2_Volts;
+ double deltaV1;
+ double deltaV2_Volts;
+ 
+ double VTH1;
+ double VTH2;
+ double VTH3;
+ double Vth;
+ double SoH_Metric;
+ double temperature_Celsius;
+ unsigned int SoC_recent;
+ 
+ int Pass = 0;
+ int Warning = 0;
+ int SoH_check = 0;
+ unsigned int  SoC_Max = 0;
+ 
+/**************************************************************/
 // END DEFINITIONS AND HEADERS
 /**************************************************************/
 
@@ -157,8 +179,7 @@ void setup() //Run once
   // RTC init
   Wire.begin();
   Wire.setModule(0); //I2C bus 0
-  
-  //GetTimeDate();
+ 
   CheckFileName(); //New file for each day
   Serial.print("\nOCV_Filename: ");
   Serial.print(OCV_Filename);
@@ -188,6 +209,11 @@ void setup() //Run once
   pinMode(LED4,OUTPUT);
   
   /************************************************/
+  // Initialize Timer Interrupts
+  initTimer0_OCV();
+  initTimer1_Valley();
+  
+  /************************************************/
   // EEPROM Init
   /*SysCtlPeripheralEnable(SYSCTL_PERIPH_EEPROM0);
   
@@ -206,10 +232,18 @@ void setup() //Run once
   GPIOIntTypeSet(GPIO_PORTM_BASE, GPIO_PIN_5, GPIO_FALLING_EDGE);
   GPIOIntEnable(GPIO_PORTM_BASE, GPIO_INT_PIN_5);*/
   
-  /************************************************/
-  // Initialize Timer Interrupts
-  initTimer0_OCV();
-  initTimer1_Valley();
+  //******************************************************//
+// This interrupt is caused by a low reading on pin 30
+//******************************************************//
+
+/*void GPIOIsr()
+{
+  Serial.println("Interrupt Handler");
+  EEPROMProgram((uint32_t *)&eepromWriteData, EEPROM_TEST_ADDRESS, 4);
+  
+  GPIOIntClear(GPIO_PORTM_BASE, GPIO_INT_PIN_5);
+}
+ */  
 }
 
 /*************************************************************************/
@@ -228,11 +262,16 @@ void loop()
   
   if(OCV_Measure_Flag) OCV_Checker();
   
-  if(ValleyDetect_Flag >= 1 && valleyFlag == 1 && SoCflag)
+  if(ValleyDetect_Flag >= 1 && OCV_Flag == 1)
   {
     Serial.println("Valley Interrupt");
     ValleyStatus = Valley_Processor(ValleyDetect_Flag);
     if(status >= dvdtdetected) SaveBurstToSD();
+    if(SoH_check)
+    { 
+      SaveSOHtoSD(Pass, V1_Volts, V2_Volts, OCV_Volts, temperature_Celsius, SoH_Metric, SoC_Max, Warning);
+      SoH_check = 0;
+    }
     ValleyDetect_Flag = 0;
   }
 }

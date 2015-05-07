@@ -2,7 +2,7 @@
 // Variables for storing data
 /*******************************************************/
 
-const unsigned char OCV_Samples = 10;  //Number of Samples for OCV
+const unsigned char OCV_Samples = 3;  //Number of Samples for OCV
 
 unsigned int OCV_meas_index = 0;
 unsigned int OCV_samples[OCV_Samples];
@@ -10,7 +10,7 @@ double temperature_samples[OCV_Samples];
 unsigned int OCV_SoC_Estimates[OCV_Samples];
 unsigned char OCV_valid[OCV_Samples];
 unsigned long OCV_sampletime[OCV_Samples];
-unsigned int SoC_Max = 0;
+//unsigned int SoC_Max = 0;
 
 int OCV_upper_limit = 13*countspervolt;
 int OCV_lower_limit = 11*countspervolt;
@@ -83,7 +83,7 @@ void CheckMinMaxOCV()
       
       if(OCV_SoC_Estimates[OCV_meas_index] > SoC_Max) SoC_Max = OCV_SoC_Estimates[OCV_meas_index];
       
-      valleyFlag = 1;
+      OCV_Flag = 1;
       if(SoC_Max > 50)
       { 
         digitalWrite(LED2, 1);
@@ -148,7 +148,7 @@ int minOCV()
 
 unsigned int FindRecentSoCRef()
 {
-  unsigned int SoC_recent = 0xffff;
+  SoC_recent = 0xffff;
   unsigned int OCV_recent = 0xffff;
   unsigned int OCV_ref = 0xffff;
   
@@ -175,6 +175,7 @@ unsigned int FindRecentSoCRef()
     }
   }
   return OCV_ref;
+  //return SoC_Max;
 }
 
 /*******************************************************/

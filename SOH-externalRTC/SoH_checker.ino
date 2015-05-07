@@ -26,10 +26,24 @@ int warning = 0;
 
 int CheckSOH(const int Valley1, const int Valley2, const unsigned int OCV, const double Temperature, const int SoC_recent)
 {
-  
+  double SoH_Metric_Array[10]; 
   int OCV_mv = millivoltspercount*OCV;
   int V1_mv = millivoltspercount*Valley1;
   int V2_mv = millivoltspercount*Valley2;
+  
+  OCV_Volts = voltspercount*OCV;
+  V1_Volts = voltspercount*Valley1;
+  V2_Volts = voltspercount*Valley2;
+  deltaV1 = OCV_Volts - V1_Volts;
+  deltaV2_Volts = V2_Volts - V1_Volts;
+  
+  //Serial.println(OCV_Volts);
+  //Serial.println(V1_Volts);
+  //Serial.println(V2_Volts);
+  //Serial.println(deltaV1_volts);
+  //Serial.print("deltaV2");
+  //Serial.println(deltaV2_Volts);
+  
   
   int dV2thresh = multiMap(Temperature,dV2thresh_TempData,dV2thresh_Vth1,9);
 
@@ -37,37 +51,93 @@ int CheckSOH(const int Valley1, const int Valley2, const unsigned int OCV, const
 
 
   int dvthresh_complete = dV2thresh + dV1mod ;
-  
-  
-  char tempstring[50] = "";
-  //sprintf(tempstring, "OCV %i,dvthr %i", OCV_mv, dvthresh_complete);
-  //sprintf(tempstring, "OCV %i,V1 %i,V2 %i, dv2th %i, dv1mod %i,dvthr %i", OCV_mv, V1_mv, V2_mv, dV2thresh, dV1mod, dvthresh_complete);
+   
+  //char tempstring[50] = "";
+  //sprintf(tempstring, "OCV %0.2f,V1 %0.2f,V2 %0.2i, deltaV1 %0.2f, VTH1 %0.2f VTH2 %0.2f", OCV_Volts, V1_Volts, V2_Volts, deltaV1_volts, VTH1, VTH2);
   //Serial.println(tempstring);
-    
-  int Pass = 0;
+  
+  //****************************/
+  // JI Hyun Implementation:
+  //****************************/
+  Serial.print("Temperature ");
+  Serial.print(Temperature);
+  
+  VTH1 = ((-0.0011*Temperature*Temperature*Temperature) + (0.0005*Temperature*Temperature) + (4.4526*Temperature) + 160)/1000;
+  Serial.print("VTH1 ");
+  Serial.println(VTH1);
+  
+  Serial.print("deltaV1 ");
+  Serial.println(deltaV1);
+  
+  double calc = (0.3839*deltaV1*deltaV1*deltaV1*deltaV1*deltaV1*deltaV1) + (-11.044*deltaV1*deltaV1*deltaV1*deltaV1*deltaV1)
+  + (128.82*deltaV1*deltaV1*deltaV1*deltaV1) + (-769.14*deltaV1*deltaV1*deltaV1) + (2375.5*deltaV1*deltaV1)
+  + (-3000*deltaV1) + 514.62;
+  
+  VTH2 = calc/1000;
+  Serial.print("VTH2 ");
+  Serial.println(VTH2);
+  
+  Serial.print("SoC Max ");
+  Serial.println(SoC_Max);
+  
+  VTH3 = ((-0.0099*SoC_Max*SoC_Max) - (2.1002*SoC_Max) + 298.78)/1000;
+  Serial.print("VTH3 ");
+  Serial.println(VTH3);
+ 
+  Vth = VTH1 + VTH2 + VTH3;
+  Serial.print("Vth ");
+  Serial.println(Vth);
+ 
+  Serial.print("deltaV2 " );
+  Serial.println(deltaV2_Volts);
+  
+  SoH_Metric = deltaV2_Volts - Vth;
+  SoH_Metric_Array[SOH_Index] = SoH_Metric;
+  Serial.print("SoH Metric ");
+  Serial.println(SoH_Metric);
+ 
+  if(SoH_Metric > 0) Pass = 1;
+  
+  if(SOH_Index)
+  {
+    int previous = SoH_Metric_Array[SOH_Index]*SoH_Metric_Array[SOH_Index-1];
+    if(previous > 0) Warning = 1;
+    else Warning = 0;
+    Serial.println(Warning);
+  }
+  
+  
+  //****************************/
+  // JI Hyun Implementation:
+  //****************************/
+  
+  
+  //sprintf(tempstring, "OCV %i,dvthr %i", OCV_mv, dvthresh_complete);
+  
   double V1 = voltspercount*Valley1;
   double V2 = voltspercount*Valley2;
   double OCV_V = voltspercount*OCV;
-  
-  SOH_Metric[SOH_Index] = (V2_mv - V1_mv) - dvthresh_complete;
-  if(SOH_Index)
-  {
-    int previous = SOH_Metric[SOH_Index]*SOH_Metric[SOH_Index-1];
-    if(previous > 0) warning = 1;
-  }
-  
-  if( (V2_mv - V1_mv) > dvthresh_complete )
-  {
-    Pass = 1;
-  }
-  
+//  
+//  SOH_Metric[SOH_Index] = (V2_mv - V1_mv) - dvthresh_complete;
+//  if(SOH_Index)
+//  {
+//    int previous = SOH_Metric[SOH_Index]*SOH_Metric[SOH_Index-1];
+//    if(previous > 0) warning = 1;
+//  }
+//  
+//  if( (V2_mv - V1_mv) > dvthresh_complete )
+//  {
+//    Pass = 1;
+//  }
+//  
   // reset parameters
+  SoH_check = 1;
   SoCflag = 0;
   ValleyDetect_Flag = 0;
+  OCV_Flag = 0;
   SOH_Index++;
-  
-  SaveSOHtoSD(Pass, V1, V2, OCV_V, Temperature, SOH_Metric[SOH_Index], SoC_recent, warning);
-  return Pass;
-  
+  status = initialized;
+
+  return Pass;  
 }
 
